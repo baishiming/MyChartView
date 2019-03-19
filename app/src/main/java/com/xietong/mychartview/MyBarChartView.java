@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ public class MyBarChartView extends View {
 
     private List<String> yAxisList = new ArrayList<>();
     private List<Integer> xAxisList = new ArrayList<>();
+    private List<Integer> xAxisList2 = new ArrayList<>();
 
     private int keduWidth = 20; //坐标轴上横向标识线宽度
     private int keduSpace = 46; //每个刻度之间的间距 dp
@@ -78,7 +80,8 @@ public class MyBarChartView extends View {
                 ContextCompat.getColor(context, R.color.color_4388bc)};
 
         yAxisList = Arrays.asList("1月份", "2月份", "3月份", "4月份", "5月份");
-        xAxisList = Arrays.asList(5,10,15,25,30);
+        xAxisList = Arrays.asList(10,10,15,25,30);
+        xAxisList2 = Arrays.asList(19,25,15,10,20);
         valueSpace = 5;
         startX = dip2px(mContext,mXTextWidth);
         // + top 间距 10dp
@@ -173,18 +176,19 @@ public class MyBarChartView extends View {
             int initY2 = startY - dip2px(mContext,itemSpace) * (i + 2 ) - i * dip2px(mContext,itemWidth);
 
             float right1 = (float) (xEnd - (xAxisList.get(i) * (xLength/(mXScaleCount) * 1.0 / valueSpace)));
-            float right2 = (float) (xEnd - (xAxisList.get(i) * (xLength/(mXScaleCount) * 1.0 / valueSpace)));
+            float right2 = (float) (xEnd - (xAxisList2.get(i) * (xLength/(mXScaleCount) * 1.0 / valueSpace)));
 
             mPaintBar.setColor(colors[0]);
-            canvas.drawRect(startX, initY1,
-                    right1, initY1 - dip2px(mContext,itemWidth),
+            int x1 = initY1 - dip2px(mContext,itemWidth);
+            canvas.drawRect(startX, x1,
+                    right1, initY1,
                     mPaintBar);
-
+            Log.e("bsm",startX + "--" + x1 + "-right1-"+right1 + "--" + initY1);
             mPaintBar.setColor(colors[1]);
             canvas.drawRect(startX, initY2,
-                    right2, initY2 - dip2px(mContext,itemWidth),
+                    right2, x1,
                     mPaintBar);
-
+            Log.e("bsm",startX + "--" + initY2 + "-right2-"+right2 + "--" + x1);
         }
 
 
