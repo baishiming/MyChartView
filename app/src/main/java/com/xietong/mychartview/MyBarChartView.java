@@ -188,6 +188,7 @@ public class MyBarChartView extends View {
             canvas.drawRect(startX, initY2,
                     right2, x1,
                     mPaintBar);
+
             Log.e("bsm",startX + "--" + initY2 + "-right2-"+right2 + "--" + x1);
         }
 
