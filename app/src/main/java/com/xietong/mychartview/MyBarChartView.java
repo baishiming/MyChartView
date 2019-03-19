@@ -1,6 +1,8 @@
 package com.xietong.mychartview;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -37,6 +39,7 @@ public class MyBarChartView extends View {
     private int mXScaleHeith = 10;//dp 需要转换
 
     private int keduTextSpace = 10;//刻度与文字之间的间距
+    private int showMax = 4;
 
     //绘制柱形图的坐标起点
     private int startX;
@@ -50,14 +53,26 @@ public class MyBarChartView extends View {
     private int mTextSize = 12;//dp
 
     private List<String> yAxisList = new ArrayList<>();
-    private List<Integer> xAxisList = new ArrayList<>();
-    private List<Integer> xAxisList2 = new ArrayList<>();
+
+    private List<Double> xAxisValueList = new ArrayList<>();
+    private List<Double> x2AxisValueList = new ArrayList<>();
+
+    private List<String> xAxisStringList = new ArrayList<>();
+    private List<String> x2AxisStringList = new ArrayList<>();
+
+    private List<String> compareList = new ArrayList<>();
 
     private int keduWidth = 20; //坐标轴上横向标识线宽度
-    private int keduSpace = 46; //每个刻度之间的间距 dp
 
+    private int itemHeight = 0; //每个item 的高度(通过计算获取)
+
+    private int itemSpace = 23;//柱状条之间的间距
+    private int itemWidth = 11;//柱状条的宽度
+    private int itemCount = 2;//2018,2910
+
+    private int topSpace = 10;
     //刻度递增的值
-    private int valueSpace = 40;
+    private int valueSpace = 0;//通过计算获取
 
     //柱状条对应的颜色数组
     private int[] colors;
@@ -79,14 +94,21 @@ public class MyBarChartView extends View {
                 ContextCompat.getColor(context, R.color.color_07f2ab),
                 ContextCompat.getColor(context, R.color.color_4388bc)};
 
-        yAxisList = Arrays.asList("1月份", "2月份", "3月份", "4月份", "5月份");
-        xAxisList = Arrays.asList(10,10,15,25,30);
-        xAxisList2 = Arrays.asList(19,25,15,10,20);
+        yAxisList = Arrays.asList("1月份1月份1月份1月份", "2月份", "3月份", "4月份");
+        xAxisValueList = Arrays.asList(0.2,0.3,0.4,0.5);
+        x2AxisValueList = Arrays.asList(0.6,0.7,0.8,1.0);
+
+        xAxisStringList = Arrays.asList("20元","30元","40元","50元");
+        x2AxisStringList = Arrays.asList("60元","70元","90元","100元");
+        compareList = Arrays.asList("5%","4%","3%","2%");
+
         valueSpace = 5;
         startX = dip2px(mContext,mXTextWidth);
-        // + top 间距 10dp
-        startY = dip2px(mContext,keduSpace) * (yAxisList.size() - 1) + dip2px(mContext,10);
-
+        itemHeight = itemSpace + itemWidth * itemCount;
+        // itemHeight * count + itemSpace + top 间距 10dp
+        startY = dip2px(mContext, itemHeight) * (yAxisList.size())
+                + dip2px(mContext,itemSpace)
+                + dip2px(mContext,topSpace);
 
         //绘制柱状图的画笔
         mPaintBar = new Paint();
@@ -116,9 +138,11 @@ public class MyBarChartView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        int topY = startY - (yAxisList.size() - 1) * dip2px(mContext,keduSpace);
+        int topY = startY
+                - (yAxisList.size()) * dip2px(mContext, itemHeight)
+                - dip2px(mContext,itemSpace);
         //从下往上绘制Y 轴
-        canvas.drawLine(startX, startY + dip2px(mContext,keduWidth),
+        canvas.drawLine(startX, startY,
                 startX, topY,
                 mPaintLline);
 
@@ -131,11 +155,10 @@ public class MyBarChartView extends View {
                 topY + dip2px(mContext,6), mPaintLline);
 
 
-
         int xLength = dip2px(mContext,mXLength);
         //从左往右上绘制X 轴
         int xEnd = xLength + dip2px(mContext,mXTextWidth);
-        int yEnd = startY +  dip2px(mContext,keduWidth);
+        int yEnd = startY ;
         canvas.drawLine(startX, yEnd,
                 xEnd, yEnd,
                 mPaintLline);
@@ -158,6 +181,27 @@ public class MyBarChartView extends View {
                     mPaintLline);
         }
 
+        //绘制文字 环比
+        int compareX = startX + mXScaleWidth * mXScaleCount;
+        //绘制Y轴的文字
+        Rect compareTextRect = new Rect();
+        String compareString = "环比";
+        mPaintText.getTextBounds(compareString, 0,
+                compareString.length(),
+                compareTextRect);
+
+
+        //计算文字的 x 坐标 y坐标
+        int compareY = topY + compareTextRect.height();
+
+        Log.e("bsm","compareY=="+compareY);
+        canvas.drawText(compareString,
+                compareX,
+                compareY,
+                mPaintText);
+
+
+
         //绘制Y轴的文字
         for (int i = 0; i < yAxisList.size(); i++) {
             //绘制Y轴的文字
@@ -165,38 +209,96 @@ public class MyBarChartView extends View {
             mPaintText.getTextBounds(yAxisList.get(i), 0,
                     yAxisList.get(i).length(),
                     textRect);
+            //计算文字的 x 坐标 y坐标
+            int textY = startY - (i + 1) * dip2px(mContext, itemHeight) + textRect.height();
+
+            Log.e("bsm","textY=="+textY);
             canvas.drawText(yAxisList.get(i),
-                    (startX - dip2px(mContext,keduWidth)) - textRect.width() - dip2px(mContext,keduTextSpace),
-                    startY - (i + 1) * dip2px(mContext,keduSpace) + dip2px(mContext,keduSpace),
+                    (startX - textRect.width() - dip2px(mContext,keduTextSpace)),
+                    textY,
                     mPaintText);
 
-            //绘制柱状条
+            //绘制柱状条 从下想上绘制
+            //确定第一个柱第一个点的y坐标(左上点)的位置(起点y坐标-间距个数-柱的高度*个数)
+            int firstY1 = startY - dip2px(mContext,itemSpace) * (i + 1 ) - ((i+1)*2 - 1) * dip2px(mContext,itemWidth);
+            int secondY1 = firstY1 - dip2px(mContext,itemWidth);
 
-            int initY1 = startY - dip2px(mContext,itemSpace) * (i + 1 ) - i * dip2px(mContext,itemWidth);
-            int initY2 = startY - dip2px(mContext,itemSpace) * (i + 2 ) - i * dip2px(mContext,itemWidth);
+            Log.e("bsm","startY=="+startY);
+            Log.e("bsm","firstY1=="+firstY1);
+            Log.e("bsm","secondY1=="+secondY1);
+            Log.e("bsm","itemHeight"+dip2px(mContext, itemHeight)+"");
+            //数据最多不能超过x轴的第四个刻度, 计算 比例
+            //x柱图到第四个刻度的距离
+            int showLength = xLength/(mXScaleCount+1) * showMax;
 
-            float right1 = (float) (xEnd - (xAxisList.get(i) * (xLength/(mXScaleCount) * 1.0 / valueSpace)));
-            float right2 = (float) (xEnd - (xAxisList2.get(i) * (xLength/(mXScaleCount) * 1.0 / valueSpace)));
+            float right1 = (float) (startX + showLength * xAxisValueList.get(i));
+            float right2 = (float) (startX + showLength * x2AxisValueList.get(i));
+
 
             mPaintBar.setColor(colors[0]);
-            int x1 = initY1 - dip2px(mContext,itemWidth);
-            canvas.drawRect(startX, x1,
-                    right1, initY1,
+            //第一个柱第二个点的y坐标(右下点)的位置
+            int firstY2 = firstY1 + dip2px(mContext,itemWidth);
+            canvas.drawRect(startX, firstY1,
+                    right1, firstY2,
                     mPaintBar);
-            Log.e("bsm",startX + "--" + x1 + "-right1-"+right1 + "--" + initY1);
             mPaintBar.setColor(colors[1]);
-            canvas.drawRect(startX, initY2,
-                    right2, x1,
+            //第二个柱的第一个点 是第一个柱第二个点
+            int senodY2 = secondY1 +  dip2px(mContext,itemWidth);
+            canvas.drawRect(startX, secondY1,
+                    right2, senodY2,
                     mPaintBar);
-            Log.e("bsm",startX + "--" + initY2 + "-right2-"+right2 + "--" + x1);
+
+            //绘制Y轴的文字
+            Rect textRectAxis = new Rect();
+            mPaintText.getTextBounds(xAxisStringList.get(i), 0,
+                    xAxisStringList.get(i).length(),
+                    textRectAxis);
+            //计算文字的 x 坐标 y坐标
+            float textAxisX = (float) (startX + showLength * xAxisValueList.get(i));
+
+            Log.e("bsm","textY=="+textY);
+            canvas.drawText(xAxisStringList.get(i),
+                    textAxisX,
+                    firstY2,
+                    mPaintText);
+
+            //绘制Y轴的文字
+            Rect textRectAxis2 = new Rect();
+            mPaintText.getTextBounds(x2AxisStringList.get(i), 0,
+                    x2AxisStringList.get(i).length(),
+                    textRectAxis2);
+            //计算文字的 x 坐标 y坐标
+            float textAxisX2 = (float) (startX + showLength * x2AxisValueList.get(i));
+
+            Log.e("bsm","textY=="+textY);
+            canvas.drawText(x2AxisStringList.get(i),
+                    textAxisX2,
+                    senodY2,
+                    mPaintText);
+
+            //画图片 画比例
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.icon_compare_down);
+            canvas.drawBitmap(bitmap,compareX,secondY1,mPaintLline);
+            //画图片 后面的比例 文字
+            //绘制Y轴的文字
+            Rect bitmapText = new Rect();
+            mPaintText.getTextBounds(compareList.get(i), 0,
+                    compareList.get(i).length(),
+                    bitmapText);
+            //计算文字的 x 坐标 y坐标
+            float bitmapTextX = compareX + bitmap.getWidth();
+
+            Log.e("bsm","textY=="+textY);
+            canvas.drawText(compareList.get(i),
+                    bitmapTextX,
+                    senodY2,
+                    mPaintText);
+
+
         }
 
 
     }
-
-
-    private int itemSpace = 23;//柱状条之间的间距
-    private int itemWidth = 11;//柱状条的宽度
 
 
     /**
