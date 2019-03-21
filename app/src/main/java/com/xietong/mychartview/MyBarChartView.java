@@ -10,7 +10,9 @@ import android.graphics.Rect;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -307,5 +309,39 @@ public class MyBarChartView extends View {
     public static int dip2px(Context context, float dpValue) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
+    }
+
+    private int index = -1;
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        float x=event.getX();
+        float y = event.getY();
+        switch (event.getAction()){
+            case MotionEvent.ACTION_MOVE:
+                Log.e("bsm","ACTION_MOVE x=="+x+",y=="+y);
+                break;
+            case MotionEvent.ACTION_DOWN:
+                Log.e("bsm","ACTION_DOWN x=="+x+",y=="+y);
+
+                for (int i = 0; i < yAxisList.size(); i++) {
+                    if(y < (startY - ((dip2px(mContext, itemHeight)*i + dip2px(mContext,topSpace))))
+                            && y > (startY - ((dip2px(mContext, itemHeight) * (i+1) + dip2px(mContext,topSpace))))){
+                        index = i;
+                        break;
+                    }
+
+                }
+                if(index!=-1){
+                    Toast.makeText(mContext,"index=="+index,Toast.LENGTH_SHORT).show();
+                    index = -1;
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                Log.e("bsm","ACTION_UP x=="+x+",y=="+y);
+                invalidate();
+                return true;
+        }
+        return super.onTouchEvent(event);
     }
 }

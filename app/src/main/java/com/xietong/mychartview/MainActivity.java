@@ -1,22 +1,42 @@
 package com.xietong.mychartview;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.transition.Slide;
+import android.view.View;
+import android.widget.Button;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.List;
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-public class MainActivity extends AppCompatActivity {
+    private Button btn_barChart;
+    private Button btn_slider;
 
-    private BarChartView barChartView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        List<Integer> mData = Arrays.asList(0, 76, 90, 50, 187);
-        List<String> xList = Arrays.asList("1月份", "2月份", "3月份", "4月份", "5月份");
-        barChartView = findViewById(R.id.barChartView);
-        barChartView.updateValueData(mData,xList,mData);
+        initView();
+    }
+
+
+    private void initView() {
+        btn_barChart = (Button) findViewById(R.id.btn_barChart);
+        btn_slider = (Button) findViewById(R.id.btn_slider);
+
+        btn_barChart.setOnClickListener(this);
+        btn_slider.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_barChart:
+                startActivity(new Intent(this,BarChartActivity.class));
+                break;
+            case R.id.btn_slider:
+                startActivity(new Intent(this,SliderActivity.class));
+                break;
+        }
     }
 }

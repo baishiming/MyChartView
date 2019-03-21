@@ -7,21 +7,18 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-
-    <Button
-        android:id="@+id/btn_barChart"
+    <com.xietong.mychartview.BarChartView
+        android:id="@+id/barChartView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Bar_Chart"
-        />
+        android:layout_height="match_parent"
+        android:background="#aa000000"
+        android:layout_weight="1"/>
 
 
-    <Button
-        android:id="@+id/btn_slider"
+    <com.xietong.mychartview.MyBarChartView
+        android:id="@+id/my"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Slider"
-        />
-
+        android:layout_height="match_parent"
+        android:layout_weight="1"/>
 
 </LinearLayout>
