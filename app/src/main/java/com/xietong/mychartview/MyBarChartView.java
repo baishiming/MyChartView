@@ -54,15 +54,7 @@ public class MyBarChartView extends View {
 
     private int mTextSize = 12;//dp
 
-    private List<String> yAxisList = new ArrayList<>();
-
-    private List<Double> xAxisValueList = new ArrayList<>();
-    private List<Double> x2AxisValueList = new ArrayList<>();
-
-    private List<String> xAxisStringList = new ArrayList<>();
-    private List<String> x2AxisStringList = new ArrayList<>();
-
-    private List<String> compareList = new ArrayList<>();
+    private List<ChartViewBean> yAxisList = new ArrayList<>();
 
     private int keduWidth = 20; //坐标轴上横向标识线宽度
 
@@ -96,13 +88,27 @@ public class MyBarChartView extends View {
                 ContextCompat.getColor(context, R.color.color_07f2ab),
                 ContextCompat.getColor(context, R.color.color_4388bc)};
 
-        yAxisList = Arrays.asList("1月份1月份1月份1月份", "2月份", "3月份", "4月份");
-        xAxisValueList = Arrays.asList(0.2,0.3,0.4,0.5);
-        x2AxisValueList = Arrays.asList(0.6,0.7,0.8,1.0);
 
-        xAxisStringList = Arrays.asList("20元","30元","40元","50元");
-        x2AxisStringList = Arrays.asList("60元","70元","90元","100元");
-        compareList = Arrays.asList("5%","4%","3%","2%");
+        ChartViewBean bean = new ChartViewBean();
+        bean.setKey("专家种类");
+        bean.setIsRise(1);
+        bean.setRate(35.5);
+        bean.setLastYear(35);
+        bean.setThisYear(40);
+        bean.setUnit("个");
+        bean.setMax(50);
+
+        ChartViewBean bean1 = new ChartViewBean();
+        bean1.setKey("种植面积");
+        bean1.setIsRise(-1);
+        bean1.setRate(45);
+        bean1.setLastYear(60);
+        bean1.setThisYear(35);
+        bean1.setUnit("万亩");
+        bean1.setMax(70);
+        yAxisList.add(bean);
+        yAxisList.add(bean1);
+
 
         valueSpace = 5;
         startX = dip2px(mContext,mXTextWidth);
@@ -185,14 +191,11 @@ public class MyBarChartView extends View {
 
         //绘制文字 环比
         int compareX = startX + mXScaleWidth * mXScaleCount;
-        //绘制Y轴的文字
         Rect compareTextRect = new Rect();
         String compareString = "环比";
         mPaintText.getTextBounds(compareString, 0,
                 compareString.length(),
                 compareTextRect);
-
-
         //计算文字的 x 坐标 y坐标
         int compareY = topY + compareTextRect.height();
 
@@ -208,14 +211,14 @@ public class MyBarChartView extends View {
         for (int i = 0; i < yAxisList.size(); i++) {
             //绘制Y轴的文字
             Rect textRect = new Rect();
-            mPaintText.getTextBounds(yAxisList.get(i), 0,
-                    yAxisList.get(i).length(),
+            mPaintText.getTextBounds(yAxisList.get(i).getKey(), 0,
+                    yAxisList.get(i).getKey().length(),
                     textRect);
             //计算文字的 x 坐标 y坐标
             int textY = startY - (i + 1) * dip2px(mContext, itemHeight) + textRect.height();
 
             Log.e("bsm","textY=="+textY);
-            canvas.drawText(yAxisList.get(i),
+            canvas.drawText(yAxisList.get(i).getKey(),
                     (startX - textRect.width() - dip2px(mContext,keduTextSpace)),
                     textY,
                     mPaintText);
@@ -225,80 +228,91 @@ public class MyBarChartView extends View {
             int firstY1 = startY - dip2px(mContext,itemSpace) * (i + 1 ) - ((i+1)*2 - 1) * dip2px(mContext,itemWidth);
             int secondY1 = firstY1 - dip2px(mContext,itemWidth);
 
-            Log.e("bsm","startY=="+startY);
-            Log.e("bsm","firstY1=="+firstY1);
-            Log.e("bsm","secondY1=="+secondY1);
-            Log.e("bsm","itemHeight"+dip2px(mContext, itemHeight)+"");
             //数据最多不能超过x轴的第四个刻度, 计算 比例
             //x柱图到第四个刻度的距离
             int showLength = xLength/(mXScaleCount+1) * showMax;
 
-            float right1 = (float) (startX + showLength * xAxisValueList.get(i));
-            float right2 = (float) (startX + showLength * x2AxisValueList.get(i));
+            float right1 = (float) (startX + showLength * (yAxisList.get(i).getThisYear()*1.0/yAxisList.get(i).getMax()));
+            float right2 = (float) (startX + showLength * (yAxisList.get(i).getLastYear()*1.0/yAxisList.get(i).getMax()));
 
 
-            mPaintBar.setColor(colors[0]);
+            Log.e("bsm","startY=="+startY);
+            Log.e("bsm","firstY1=="+firstY1);
+            Log.e("bsm","secondY1=="+secondY1);
+            Log.e("bsm","itemHeight"+dip2px(mContext, itemHeight)+"");
+
             //第一个柱第二个点的y坐标(右下点)的位置
+            mPaintBar.setColor(colors[0]);
             int firstY2 = firstY1 + dip2px(mContext,itemWidth);
             canvas.drawRect(startX, firstY1,
                     right1, firstY2,
                     mPaintBar);
-            mPaintBar.setColor(colors[1]);
+
             //第二个柱的第一个点 是第一个柱第二个点
+            mPaintBar.setColor(colors[1]);
             int senodY2 = secondY1 +  dip2px(mContext,itemWidth);
             canvas.drawRect(startX, secondY1,
                     right2, senodY2,
                     mPaintBar);
 
-            //绘制Y轴的文字
+            //绘制(thisYear)Y轴后面的文字
             Rect textRectAxis = new Rect();
-            mPaintText.getTextBounds(xAxisStringList.get(i), 0,
-                    xAxisStringList.get(i).length(),
+            String thisYearString = yAxisList.get(i).getThisYear() + yAxisList.get(i).getUnit();
+            mPaintText.getTextBounds(thisYearString, 0,
+                    thisYearString.length(),
                     textRectAxis);
             //计算文字的 x 坐标 y坐标
-            float textAxisX = (float) (startX + showLength * xAxisValueList.get(i));
+            float textAxisX = (float) (startX + showLength * (yAxisList.get(i).getThisYear()*1.0/yAxisList.get(i).getMax()));
 
             Log.e("bsm","textY=="+textY);
-            canvas.drawText(xAxisStringList.get(i),
+            canvas.drawText(thisYearString,
                     textAxisX,
                     firstY2,
                     mPaintText);
 
-            //绘制Y轴的文字
+
+            //绘制Y轴后面的文字
             Rect textRectAxis2 = new Rect();
-            mPaintText.getTextBounds(x2AxisStringList.get(i), 0,
-                    x2AxisStringList.get(i).length(),
+            String lastYearString = yAxisList.get(i).getLastYear() + yAxisList.get(i).getUnit();
+            mPaintText.getTextBounds(lastYearString, 0,
+                    lastYearString.length(),
                     textRectAxis2);
             //计算文字的 x 坐标 y坐标
-            float textAxisX2 = (float) (startX + showLength * x2AxisValueList.get(i));
+            float textAxisX2 = (float) (startX + showLength * (yAxisList.get(i).getLastYear()*1.0/yAxisList.get(i).getMax()));
 
             Log.e("bsm","textY=="+textY);
-            canvas.drawText(x2AxisStringList.get(i),
+            canvas.drawText(lastYearString,
                     textAxisX2,
                     senodY2,
                     mPaintText);
 
             //画图片 画比例
-            Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.icon_compare_down);
+            Bitmap bitmap = null;
+            //判断图片
+            if(yAxisList.get(i).getIsRise()>0){
+                bitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.icon_compare_up);
+            }else if(yAxisList.get(i).getIsRise()<0) {
+                bitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.icon_compare_down);
+            }else {
+                bitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.icon_compare_unchange);
+            }
+
             canvas.drawBitmap(bitmap,compareX,secondY1,mPaintLline);
             //画图片 后面的比例 文字
-            //绘制Y轴的文字
             Rect bitmapText = new Rect();
-            mPaintText.getTextBounds(compareList.get(i), 0,
-                    compareList.get(i).length(),
+            String compareRateString = yAxisList.get(i).getRate() + "%";
+            mPaintText.getTextBounds(compareRateString, 0,
+                    compareRateString.length(),
                     bitmapText);
             //计算文字的 x 坐标 y坐标
             float bitmapTextX = compareX + bitmap.getWidth();
 
             Log.e("bsm","textY=="+textY);
-            canvas.drawText(compareList.get(i),
+            canvas.drawText(compareRateString,
                     bitmapTextX,
                     senodY2,
                     mPaintText);
-
-
         }
-
 
     }
 
